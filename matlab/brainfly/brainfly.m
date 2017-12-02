@@ -15,7 +15,7 @@ predictionMargin=0;
 warpCursor = true; % cannon position is directly classifier output
 
 % make a simple odd-ball stimulus sequence, with targets mintti apart
-[stimSeq,stimTime,eventSeq] = mkStimSeqP300(3,gameDuration,isi,mintti,oddballp);
+[stimSeq,stimTime,eventSeq] = mkStimSeqP300(3,gameDuration,isi,mintti*0.01,oddballp);
 stimColors = [bgColor;flashColor]; % map from stim-seq (0,1) to color to use [bg,flash] [nstimState x 3]
 % game object UID used for each stimulus sequence, i.e. obj2stim(3)=apply stim seq 3 to game object with UID (stim2obj(3)): [nStim x 1]
 stim2obj   = zeros(size(stimSeq,1),1);
@@ -50,13 +50,16 @@ drawnow;
 
                                 % Make cannon:
 hCannon = Cannon(hAxes);
+hCheckerboardLeft = Checkerboard(hAxes, [0,0.8], 'left');
+hCheckerboardRight = Checkerboard(hAxes, [0.2, 1], 'right');
 % make background for p3 stimuli
 %hbackground = rectangle('position',[gameCanvasXLims(1),gameCanvasYLims(1),diff(gameCanvasXLims),10]);
 
 
         % make a simple odd-ball stimulus sequence, with targets mintti apart
 % BODGE: stim-seq has 6 simuli.  4 of which are virtual to give good tgt rates
-[stimSeq,stimTime,eventSeq] = mkStimSeqP300(6,gameDuration,isi,mintti,oddballp);
+[stimSeq,stimTime,eventSeq] = mkStimSeqP300(6,gameDuration,isi,mintti*0.01,oddballp);
+
 stimSeq=stimSeq(1:2,:);
 stimColors = [bgColor;flashColor]; 
 
@@ -106,10 +109,10 @@ hText = text(gameCanvasXLims(1),gameCanvasYLims(2),genTextStr(score,curBalls,can
                        % wait for user to be ready before starting everything
 set(hText,'string', {'' 'Click mouse when ready to begin.'}, 'visible', 'on'); drawnow;
 waitforbuttonpress;
-for i=0:5;
-   set(hText,'string',sprintf('Starting in: %ds',5-i),'visible','on');drawnow;
-   sleepSec(1);
-end
+% for i=0:5;
+%    set(hText,'string',sprintf('Starting in: %ds',5-i),'visible','on');drawnow;
+%    sleepSec(1);
+% end
 set(hText,'visible', 'off'); drawnow; 
 
                                 % Loop while figure is active:
@@ -152,7 +155,9 @@ while ( toc(t0)<gameDuration && ishandle(hFig))
     else
       fprintf('%d) warp %g\n',nframe,cannonAction);
     end
-    hCannon.move(cannonAction,cannonTrotFrac);      
+    hCannon.move(cannonAction,cannonTrotFrac);  
+    hCheckerboardLeft.move(cannonAction, cannonTrotFrac);
+    hCheckerboardRight.move(cannonAction, cannonTrotFrac);
   end
 
   if ( strcmp(cannonAction,'fire') ||  autoFireMode>0 ) % Shoot cannonball if enough time has elapsed.
@@ -173,7 +178,7 @@ while ( toc(t0)<gameDuration && ishandle(hFig))
   %----------------------------------------------------------------------
   % make new bonus alien if it's time.
   if bonusFlash < bonusFlashnr
-      set(hCannon.hGraphic,'facecolor','y');
+      %set(hCannon.hGraphic,'facecolor','y');
       Alien.flashAlien(hAliens,bonusFlash+1)
       bonusFlash = bonusFlash + 1;
   end
@@ -266,7 +271,8 @@ while ( toc(t0)<gameDuration && ishandle(hFig))
                  % sprintf('%d=%d ',[stim2obj(stim2obj>0) ss(stim2obj>0)]'));
 
                             % flash cannon, N.B. cannon is always stim-seq #1
-    set(hCannon.hGraphic,'facecolor',stimColors(ss(1)+1,:));
+    set(hCheckerboardLeft.hGraphic, 'facecolor', stimColors(ss(1)+1,:));
+    set(hCheckerboardRight.hGraphic, 'facecolor', stimColors(ss(1)+1,:));
                                 % flash the background
     %set(hbackground,'facecolor',stimColors(ss(2)+1,:));
     %%                             % flash the aliens
