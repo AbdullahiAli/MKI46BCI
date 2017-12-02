@@ -2,16 +2,16 @@ useBuffer=true;
 useKeyboard=true;
 
 if ( exist('OCTAVE_VERSION') ) debug_on_error(1); else dbstop if error; end;
-if ( exist('OCTAVE_VERSION') ) % use fast render pipeline in OCTAVE
-  page_output_immediately(1); % prevent buffering output
-  if ( ~isempty(strmatch('qt',available_graphics_toolkits())) )
-	 graphics_toolkit('qt'); 
-  elseif ( ~isempty(strmatch('qthandles',available_graphics_toolkits())) )
-	 graphics_toolkit('qthandles'); 
-  elseif ( ~isempty(strmatch('fltk',available_graphics_toolkits())) )
-	 graphics_toolkit('fltk'); % use fast rendering library
+  if ( exist('OCTAVE_VERSION','builtin') ) 
+	 page_output_immediately(1); % prevent buffering output
+	 if ( ~isempty(strmatch('qthandles',available_graphics_toolkits())) )
+		graphics_toolkit('qthandles'); 
+	 elseif ( ~isempty(strmatch('qt',available_graphics_toolkits())) )
+		graphics_toolkit('qt'); 
+	 elseif ( ~isempty(strmatch('fltk',available_graphics_toolkits())) )
+		graphics_toolkit('fltk'); % use fast rendering library
+	 end
   end
-end
 
                          % if using the buffer the intialize the connection
 if ( useBuffer ...
@@ -43,23 +43,29 @@ buffhost='localhost'; buffport=1972;
 
 % BCI Stim Props
 flashColor=[1 1 1]; % the 'flash' color (white)
-tgtColor = [.8 .8 .8]; % target cue
-bgColor  = [.5 .5 .5]; % backgroud color
+tgtColor = [.8 .8 .8]; % target cue, light grey
+bgColor  = [.5 .5 .5]; % backgroud color, medium grey
 cueColor = [0 1 0];
 predColor= [0 1 0]; % prediction color
-txtColor     =[.9 .9 .9]; % color of the cue text
+txtColor = [.9 .9 .9]; % color of the cue text
+rtColor  = [1 0 0]; % reaction time cue = red
+stdColor = [.8 .8 .8]; % standard flash = light-grey
+p3tgtColor=[0 0 1]; % p3 target color
 
-gameFrameDuration = 1/10; % 5hz screen update interval
+rtMax = 2; % max time to react to reaction time task
+rtDuration = 1; % time reaction-time stimulus is on the screen
+rtInterval = [15 20];% range of times between reaction time tasks
+
+gameFrameDuration = 1/10; % 10hz screen update interval
 
 % how long 1 game level lasts
 gameDuration = 90;
 
 % P300 stimulus info
 isi   = 1/5;
-mintti= .6;
-oddballp=false;
+mintti= [.6 2.0];
+oddballp=true; % standard/target type stimulus
 stimDuration=isi;
-maxOnScreenObjs=20;
 
 %---------------------------------------------------------------------------------------------------------
 % IM calibration config
@@ -130,6 +136,6 @@ trainOpts={'width_ms',welch_width_ms,'badtrrm',1,'badchrm',1,'spatialfilter','wh
 % Epoch feedback opts
 %%0) Use exactly the same classification window for feedback as for training, but include bias adaption system to cope with train->test transfer
 earlyStopping = false;
-epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) biasFilt(x,s,epochtrialAdaptHL)}; % bias-adaption
+epochFeedbackOpts={'trlen_ms',epochtrlen_ms,'predFilt',@(x,s,e) robustBiasFilt(x,s,epochtrialAdaptHL)}; % bias-adaption
 %%2) Classify every welch-window-width (default 250ms), prediction is average of full trials worth of data, bias adaptation on the result
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptHL contFeedbackFiltLen]),'trlen_ms',welch_width_ms};%trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) robustBiasFilt(x,s,[conttrialAdaptHL contFeedbackFiltLen]),'trlen_ms',welch_width_ms};%trlDuration average

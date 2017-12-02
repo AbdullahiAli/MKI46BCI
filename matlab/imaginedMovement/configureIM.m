@@ -25,10 +25,10 @@ if ( ~exist('configRun','var') || isempty(configRun) )
 
   if ( exist('OCTAVE_VERSION','builtin') ) 
 	 page_output_immediately(1); % prevent buffering output
-	 if ( ~isempty(strmatch('qt',available_graphics_toolkits())) )
-		graphics_toolkit('qt'); 
-	 elseif ( ~isempty(strmatch('qthandles',available_graphics_toolkits())) )
+	 if ( ~isempty(strmatch('qthandles',available_graphics_toolkits())) )
 		graphics_toolkit('qthandles'); 
+	 elseif ( ~isempty(strmatch('qt',available_graphics_toolkits())) )
+		graphics_toolkit('qt'); 
 	 elseif ( ~isempty(strmatch('fltk',available_graphics_toolkits())) )
 		graphics_toolkit('fltk'); % use fast rendering library
 	 end
@@ -159,7 +159,7 @@ dvFilt= 0; % additional filtering of the decision value smoothing on the stimulu
 %% Also send all raw predictions out for use in, e.g. center-out training
 contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',-contFeedbackFiltLen,'trlen_ms',welch_width_ms}; % trlDuration average
 % as above but include an additional bias-adaption as well as classifier output smoothing
-contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) biasFilt(x,s,[conttrialAdaptFactor_apply contFeedbackFiltFactor]),'trlen_ms',welch_width_ms}; % trlDuration average
+contFeedbackOpts ={'rawpredEventType','classifier.rawprediction','predFilt',@(x,s,e) robustBiasFilt(x,s,[conttrialAdaptFactor_apply contFeedbackFiltFactor]),'trlen_ms',welch_width_ms}; % trlDuration average
 
 %%3) Classify every welch-window-width (default 500ms), with bias-adaptation
 %contFeedbackOpts ={'predFilt',@(x,s,e) biasFilt(x,s,exp(log(.5)/400)),'trlen_ms',[]}; 

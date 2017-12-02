@@ -84,8 +84,8 @@ function [clsfr,res,X,Y]=train_erp_clsfr(X,Y,varargin)
   opts=struct('classify',1,'fs',[],...
 				  'timeband_ms',[],'freqband',[],'downsample',[],'preFiltFn',[],'detrend',1,'spatialfilter','car',...
               'adaptspatialfiltFn',[],'adaptspatialfiltstate',[],...
-				  'badchrm',1,'badchthresh',3.1,'badchscale',4,...
-				  'badtrrm',1,'badtrthresh',3,'badtrscale',4,...
+				  'badchrm',1,'badchthresh',3.1,'badchscale',0,...
+				  'badtrrm',1,'badtrthresh',3,'badtrscale',0,...
 				  'featFiltFn',[],...
 				  'ch_pos',[],'ch_names',[],'verb',0,'capFile','1010','overridechnms',0,...
 				  'visualize',1,'badCh',[],'nFold',10,'class_names',[],'zeroLab',1);
@@ -288,7 +288,7 @@ if ( opts.visualize )
    end
    times=(1:size(mu,2))/opts.fs;
 	xy=ch_pos; if (size(xy,1)==3) xy = xyz2xy(xy); end
-   erpfig=figure(2); clf(erpfig);  set(erpfig,'Name','Data Visualisation: ERP');
+   erpfig=figure(2); clf(erpfig);  set(erpfig,'Name','Data Visualisation: ERP');figure(erpfig);
 	yvals=times;
    try; 
 	  image3d(mu,1,'plotPos',xy,'Xvals',ch_names,'ylabel','time(s)','Yvals',yvals,'zlabel','class','Zvals',labels(:),'disptype','plot','ticklabs','sw');
@@ -298,7 +298,7 @@ if ( opts.visualize )
 	  if ( ~isempty(le.stack) ) fprintf('%s>%s : %d',le.stack(1).file,le.stack(1).name,le.stack(1).line);end
 	end;
    if ( ~(all(Yci(:)==Yci(1))) ) % only if >1 class input
-     aucfig=figure(3); clf(aucfig); set(aucfig,'Name','Data Visualisation: ERP AUC');
+     aucfig=figure(3); clf(aucfig); set(aucfig,'Name','Data Visualisation: ERP AUC');figure(aucfig);
      try;  
 		 image3d(auc,1,'plotPos',xy,'Xvals',ch_names,'ylabel','time(s)','Yvals',yvals,'zlabel','class','Zvals',auclabels,'disptype','imaget','ticklabs','sw','clim',[.2 .8],'clabel',auc);
 		 colormap ikelvin;
@@ -388,7 +388,7 @@ if ( opts.visualize >= 1 )
       b=msgbox({sprintf('Classifier performance :\n %s',summary) 'OK to continue!'},'Results');
    end
   if ( opts.visualize > 1 )
-     for i=0:.2:120; if ( ~ishandle(b) ) break; end; drawnow; pause(.2); end; % wait to close auc figure
+     for i=0:.2:10; if ( ~ishandle(b) ) break; end; drawnow; pause(.2); end; % wait to close auc figure
      if ( ishandle(b) ) close(b); end;
    end
    drawnow;
