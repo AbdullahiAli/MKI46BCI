@@ -1,4 +1,5 @@
 import pygame, sys
+from itertools import cycle
 
 
 width, height = 1500, 1000
@@ -10,9 +11,12 @@ class Rectangle(pygame.Rect):
         self.colored = True
         self.color = (255,0,0)
         self.flicker_speed = 20 # Hertz
+        self.event = False
 
     def draw(self, surface, width=0):
-        if self.colored:
+        if self.event:
+            self.color = (255, 0 ,0)
+        elif self.colored:
             self.color = (255,0,0)
         else:
             self.color = (0,0,0)
@@ -31,16 +35,23 @@ class Rectangle(pygame.Rect):
         flicker_time = 1000 / self.flicker_speed
         return flicker_time
     
+    def set_event(self, value):
+        self.event = value
+    
 def main():
     pygame.init()
+    shape_iterator = cycle(range(2))
+    pos = None
+
     fpsclock = pygame.time.Clock()
     time_passed, last_flick_left, last_flick_right = 0, 0, 0
     screen = pygame.display.set_mode((width, height))
-   
+    last_event = 0
+    
     pygame.display.set_caption('SSVEP Stimulus')
     right_rect = Rectangle(1300,400,200,400)
     left_rect = Rectangle(0,400,200,400)
-    left_rect.set_flicker_speed(15)
+    left_rect.set_flicker_speed(20)
     right_rect.set_flicker_speed(20)
     while True: # display update loop
         for event in pygame.event.get():
@@ -49,6 +60,21 @@ def main():
                     sys.exit()
         left_rect.draw(screen)
         right_rect.draw(screen)
+        if last_event > 500 and pos != None:            
+            if pos == 0:
+                left_rect.set_event(False)
+            else:
+                right_rect.set_event(False)
+                
+        if last_event > 2000:
+            pos = shape_iterator.next()
+            if pos == 0:
+                left_rect.set_event(True)
+                right_rect.set_event(False)
+            else:
+                right_rect.set_event(True)
+                left_rect.set_event(False)
+            last_event = 0
         if last_flick_left > left_rect.get_flicker_time():
             left_rect.set_color()
             last_flick_left = 0
@@ -59,6 +85,7 @@ def main():
         time_passed = fpsclock.tick(FPS)
         last_flick_left += time_passed
         last_flick_right += time_passed
+        last_event += time_passed
         
 
 main()
