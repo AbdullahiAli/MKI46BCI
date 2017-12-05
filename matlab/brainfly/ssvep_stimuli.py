@@ -1,7 +1,18 @@
 import pygame, sys
 from itertools import cycle
+import os
+from time import sleep
 
 
+bufferpath = "../../dataAcq/buffer/matlab"
+sigProcPath = "../signalProc"
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcPath))
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
+import FieldTrip
+# Connection options of fieldtrip, hostname and port of the computer running the fieldtrip buffer.
+hostname='localhost'
+port=1972
 width, height = 1500, 1000
 FPS = 60
 class Rectangle(pygame.Rect):
@@ -11,10 +22,10 @@ class Rectangle(pygame.Rect):
         self.colored = True
         self.color = (255,0,0)
         self.flicker_speed = 20 # Hertz
-        self.event = False
+        self.ssvep = False
 
     def draw(self, surface, width=0):
-        if self.event:
+        if self.ssvep:
             self.color = (255, 0 ,0)
         elif self.colored:
             self.color = (255,0,0)
@@ -35,8 +46,8 @@ class Rectangle(pygame.Rect):
         flicker_time = 1000 / self.flicker_speed
         return flicker_time
     
-    def set_event(self, value):
-        self.event = value
+    def set_ssvep(self, value):
+        self.ssvep = value
     
 def main():
     pygame.init()
@@ -62,19 +73,15 @@ def main():
         right_rect.draw(screen)
         if last_event > 500 and pos != None:            
             if pos == 0:
-                left_rect.set_event(False)
+                left_rect.set_ssvep(False)
             else:
-                right_rect.set_event(False)
+                right_rect.set_ssvep(False)
                 
         if last_event > 2000:
             pos = shape_iterator.next()
-            if pos == 0:
-                left_rect.set_event(True)
-                right_rect.set_event(False)
-            else:
-                right_rect.set_event(True)
-                left_rect.set_event(False)
+            process_ssvep_event(left_rect, right_rect, pos)
             last_event = 0
+            
         if last_flick_left > left_rect.get_flicker_time():
             left_rect.set_color()
             last_flick_left = 0
@@ -87,6 +94,47 @@ def main():
         last_flick_right += time_passed
         last_event += time_passed
         
+def process_ssvep_event(left_rect, right_rect, pos):
+    if pos == 0:
+        sendEvent("stimulus.ssvep", "left")
+        left_rect.set_ssvep(True)
+        right_rect.set_ssvep(False)
+    else:
+        sendEvent("stimulus.ssvep", "right")
+        right_rect.set_ssvep(True)
+        left_rect.set_ssvep(False)
 
+# Buffer interfacing functions 
+def sendEvent(event_type, event_value=1, offset=0):
+    e = FieldTrip.Event()
+    e.type = event_type
+    e.value = event_value
+    if offset > 0:
+        sample, bla = ftc.poll() #TODO: replace this with a clock-sync based version
+        e.sample = sample + offset + 1
+    ftc.putEvents(e)
+        
+#Connecting to Buffer
+timeout=5000
+ftc = FieldTrip.Client()
+# Wait until the buffer connects correctly and returns a valid header
+hdr = None;
+while hdr is None :
+    print(('Trying to connect to buffer on %s:%i ...'%(hostname,port)))
+    try:
+        ftc.connect(hostname, port)
+        print('\nConnected - trying to read header...')
+        hdr = ftc.getHeader()
+    except IOError:
+        pass
+
+    if hdr is None:
+        print('Invalid Header... waiting')
+        sleep(1)
+    else:
+        print(hdr)
+        print((hdr.labels))
+  
+fSample = hdr.fSample
 main()
             
