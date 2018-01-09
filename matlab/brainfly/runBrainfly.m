@@ -79,7 +79,11 @@ while (ishandle(contFig))
    case {'capfitting','eegviewer','loadtraining','sliceraw','trainersp'};
     sendEvent('subject',subject);
     sigProcCmd=['sigproc.' phaseToRun]; % command to send to the signal processor
+    disp(sigProcCmd);
     sendEvent(sigProcCmd,'start'); 
+      if ( ~isempty(strfind(phaseToRun,'train')) ) % tell the sig-proc to go if real run
+		 sendEvent('startPhase.cmd','training')
+	  end
     for i=1:20; % N.B. use a loop as safer and matlab still responds on windows...
        [devents]=buffer_newevents(buffhost,buffport,[],sigProcCmd,'end',1000); % wait until finished
        drawnow;

@@ -53,56 +53,92 @@ def main():
     pygame.init()
     shape_iterator = cycle(range(2))
     pos = None
-
+    run = True
     fpsclock = pygame.time.Clock()
-    time_passed, last_flick_left, last_flick_right = 0, 0, 0
+    time_passed, last_flick_left, last_flick_right,  pause_time = 0, 0, 0, 0
     screen = pygame.display.set_mode((width, height))
     last_event = 0
-    
+   
     pygame.display.set_caption('SSVEP Stimulus')
     right_rect = Rectangle(1300,400,200,400)
     left_rect = Rectangle(0,400,200,400)
-    left_rect.set_flicker_speed(20)
-    right_rect.set_flicker_speed(20)
+    left_rect.set_flicker_speed(14)
+    right_rect.set_flicker_speed(10)
+    ttp = 0
+    choice = shape_iterator.next()
     while True: # display update loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-        left_rect.draw(screen)
-        right_rect.draw(screen)
-        if last_event > 500 and pos != None:            
-            if pos == 0:
-                left_rect.set_ssvep(False)
-            else:
-                right_rect.set_ssvep(False)
-                
-        if last_event > 2000:
-            pos = shape_iterator.next()
-            process_ssvep_event(left_rect, right_rect, pos)
-            last_event = 0
+                    
+            if event.type == pygame.KEYDOWN:
+                run = True
+                fpsclock.tick(FPS)
+        
+        if not run:
+            left_rect.draw(screen)
+            right_rect.draw(screen)
+         
+                    
+        if run:
+            left_rect.draw(screen)
+            right_rect.draw(screen)
             
-        if last_flick_left > left_rect.get_flicker_time():
-            left_rect.set_color()
+            if last_event > 500 and pos != None:            
+                if pos == 0:
+                    left_rect.set_ssvep(False)
+                else:
+                    right_rect.set_ssvep(False)
+                    
+            if last_event > 1000:
+                process_ssvep_event(left_rect, right_rect, choice)
+                last_event = 0
+               
+                
+            if last_flick_left > left_rect.get_flicker_time():
+                left_rect.set_color()
+                last_flick_left = 0
+                
+            if last_flick_right > right_rect.get_flicker_time():
+                right_rect.set_color()
+                last_flick_right = 0
+            
+
+            time_passed = fpsclock.tick(FPS)
+            last_flick_left += time_passed
+            last_flick_right += time_passed
+            last_event += time_passed
+            pause_time += time_passed
+            ttp += time_passed
+            
+        if ttp > 240000:
+            sendEvent("stimulus.training",  "end")
+            pygame.quit()
+            sys.exit()
+            
+        if pause_time > 15000:    
+            run = False
+            choice = shape_iterator.next()
+            right_rect = Rectangle(1300,400,200,400)
+            left_rect = Rectangle(0,400,200,400)
+            left_rect.set_flicker_speed(14)
+            right_rect.set_flicker_speed(10)
+            last_event = 0
             last_flick_left = 0
-        if last_flick_right > right_rect.get_flicker_time():
-            right_rect.set_color()
             last_flick_right = 0
+            pause_time = 0
+            
         pygame.display.update()
-        time_passed = fpsclock.tick(FPS)
-        last_flick_left += time_passed
-        last_flick_right += time_passed
-        last_event += time_passed
+        
         
 def process_ssvep_event(left_rect, right_rect, pos):
     if pos == 0:
-        sendEvent("stimulus.ssvep", "left")
-        left_rect.set_ssvep(True)
-        right_rect.set_ssvep(False)
+        sendEvent("stimulus.hybrid", "left")
+       
     else:
-        sendEvent("stimulus.ssvep", "right")
-        right_rect.set_ssvep(True)
-        left_rect.set_ssvep(False)
+        sendEvent("stimulus.hybrid", "right")
+        
 
 # Buffer interfacing functions 
 def sendEvent(event_type, event_value=1, offset=0):

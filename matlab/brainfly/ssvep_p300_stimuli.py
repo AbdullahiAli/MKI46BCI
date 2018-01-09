@@ -3,7 +3,7 @@ from itertools import cycle
 from time import sleep
 import os
 
-bufferpath = "../../dataAcq/buffer/matlab"
+bufferpath = "../../dataAcq/buffer/python"
 sigProcPath = "../signalProc"
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcPath))
 
@@ -23,23 +23,17 @@ class Rectangle(pygame.Rect):
         self.colored = True
         self.color = (255,0,0)
         self.flicker_speed = 20 # Hertz
-        self.p300 = False
         self.ssvep = False
         
     def draw(self, surface, width=0):
-
-        if self.ssvep and self.p300:
+        if self.ssvep:
+            self.color = (255, 0,0) # set middle argument to zero for only SSVEP-B
             
-            self.color = (255,255,0)
-        elif self.ssvep:
-            self.color = (255, 0, 0)
-        elif self.colored and self.p300:
-            self.color = (255,255,0)
-        
         elif self.colored:
             self.color = (255,0,0)
         else:
             self.color = (0,0,0)
+        pygame.draw.rect(surface, self.color, self, width)
             
         pygame.draw.rect(surface, self.color, self, width)
         
@@ -56,9 +50,7 @@ class Rectangle(pygame.Rect):
         flicker_time = 1000 / self.flicker_speed
         return flicker_time
     
-    def set_p300(self, value):
-        self.p300 = value
-    
+ 
     def set_ssvep(self, value):
         self.ssvep = value
     
@@ -66,74 +58,103 @@ def main():
     shape_iterator = cycle(range(2))
     pygame.init()
     fpsclock = pygame.time.Clock()
-    time_passed, last_flick_left, last_flick_right = 0, 0, 0
-    last_p300, last_event = 0, 0
-    screen = pygame.display.set_mode((width, height))
     
+    ttp, pause_time, time_passed, last_flick_left, last_flick_right = 0, 0, 0, 0, 0
+    last_event = 0
+    screen = pygame.display.set_mode((width, height))
+
     pygame.display.set_caption('SSVEP - P300 Stimulus')
     right_rect = Rectangle(1300,400,200,400)
     left_rect = Rectangle(0,400,200,400)
+    run = True
     left_rect.set_flicker_speed(20)
     right_rect.set_flicker_speed(20)
     pos = None
-    sendEvent("stimulus.trail", "start")
+    target = 'left'
+    sendEvent("stimulus.training", "start")
     while True: # display update loop
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-        left_rect.draw(screen)
-        right_rect.draw(screen)
-        if last_event > 500 and pos != None:            
-            if pos == 0:
-                left_rect.set_ssvep(False)
-            else:
-                right_rect.set_ssvep(False)
-        if last_event > 2000 and  pos != None:
-            pos = shape_iterator.next()
-            process_ssvep_event(left_rect, right_rect, pos)
-            last_event = 0
-        if last_p300 > 2000 and pos != None:            
-            if pos == 0:
-                left_rect.set_p300(False)
-            else:
-                right_rect.set_p300(False)
+            if event.type == pygame.KEYDOWN:
+                run = True
+                fpsclock.tick(FPS)
+        if not run:
+            left_rect.draw(screen)
+            right_rect.draw(screen)
+            pygame.display.update()
+            
+            
+        if run:
+            left_rect.draw(screen)
+            right_rect.draw(screen)
+            # if last event lasted more than 500 ms
+            if last_event > 500 and pos != None:  
+                if pos == 0:
+                    left_rect.set_ssvep(False)
+                else:
+                    right_rect.set_ssvep(False)
+                    
+            # if last event was more than 2 sec ago     
+            if last_event > 2000:
+                pos = shape_iterator.next()
+                process_ssvep_event(left_rect, right_rect, pos, target)
+                last_event = 0
+               
+            if last_flick_left > left_rect.get_flicker_time():
+                left_rect.set_color()
+                last_flick_left = 0
+            if last_flick_right > right_rect.get_flicker_time():
+                right_rect.set_color()
+                last_flick_right = 0
                 
-        if last_p300 > 3000:
-            pos = shape_iterator.next()
-            process_p3_event(left_rect, right_rect, pos)
-            last_p300 = 0
-           
-        if last_flick_left > left_rect.get_flicker_time():
-            left_rect.set_color()
-            last_flick_left = 0
-        if last_flick_right > right_rect.get_flicker_time():
-            right_rect.set_color()
-            last_flick_right = 0
-        pygame.display.update()
-        time_passed = fpsclock.tick(FPS)
-        last_flick_left += time_passed
-        last_flick_right += time_passed
-        last_p300 += time_passed
-        last_event+= time_passed
+            pygame.display.update()
+            time_passed = fpsclock.tick(FPS)
+            last_flick_left += time_passed
+            last_flick_right += time_passed
+            last_event+= time_passed
+            ttp += time_passed
+            pause_time += time_passed
+            if ttp > 240000:
+                sendEvent("stimulus.training",  "end")
+                pygame.quit()
+                sys.exit()
+   
+            if pause_time > 60000:
+                if target == 'left':
+                    target = 'right'
+                else:
+                    target = 'left'
+                run = False
+                right_rect = Rectangle(1300,400,200,400)
+                left_rect = Rectangle(0,400,200,400)
+                left_rect.set_flicker_speed(20)
+                right_rect.set_flicker_speed(20)
+                last_event = 0
+                last_flick_left = 0
+                last_flick_right = 0
+                pause_time = 0
+        
+            
+            
 
-def process_p3_event(left_rect, right_rect, pos):
-    if pos == 0:
-        sendEvent("stimulus.p300", "left")
-        left_rect.set_p300(True)
-        right_rect.set_p300(False)
-    else:
-        sendEvent("stimulus.p300", "right")
-        right_rect.set_p300(True)
-        left_rect.set_p300(False)
 
-def process_ssvep_event(left_rect, right_rect, pos):
+def process_ssvep_event(left_rect, right_rect, pos, target):
+    
     if pos == 0:
-        sendEvent("stimulus.ssvep", "left")
+        if target == 'left':
+            sendEvent("stimulus.hybrid", "target")
+        else:
+            sendEvent("stimulus.hybrid", "non-target")
         left_rect.set_ssvep(True)
         right_rect.set_ssvep(False)
     else:
-        sendEvent("stimulus.ssvep", "right")
+        if target == 'right':
+            sendEvent("stimulus.hybrid", "target")
+        else:
+            sendEvent("stimulus.hybrid", "non-target")
         right_rect.set_ssvep(True)
         left_rect.set_ssvep(False)
 

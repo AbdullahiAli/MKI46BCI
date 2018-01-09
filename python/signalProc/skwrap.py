@@ -1,6 +1,6 @@
 import numpy
 import scipy.stats
-import sklearn.grid_search
+import sklearn.model_selection
 import sklearn.cross_validation
 import collections
 
@@ -60,7 +60,7 @@ def fit(data, events, classifier, mapping=dict(), params = None, folds = 5, shuf
         raise Exception("classifier should be a sklearn classifier.")
     
     X = createdata(data, reducer)
-
+    
     if shuffle:
         numpy.random.shuffle(X)
 
@@ -93,19 +93,21 @@ def fit(data, events, classifier, mapping=dict(), params = None, folds = 5, shuf
             raise Exception("folds should be an integer")
         
         folds = sklearn.cross_validation.KFold(X.shape[0], folds, shuffle=shuffle)
-        grid  = sklearn.grid_search.GridSearchCV(classifier, params, cv=folds)
+        grid  = sklearn.model_selection.GridSearchCV(classifier, params, cv=folds)
+   
         
         if Y is None:
             grid.fit(X)
         else:
             grid.fit(X,Y)
-        
+        print(grid.best_score_)
         classifier.set_params(**grid.best_params_)
         
     if Y is None:
         classifier.fit(X)
     else:               
         classifier.fit(X,Y)
+        
     
         
 def predict(data, classifier, mapping = None, reducerdata=None, reducerpred=None):

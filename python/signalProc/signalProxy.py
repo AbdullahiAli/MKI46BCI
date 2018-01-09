@@ -25,4 +25,4 @@ def signalproxy(fSample = 100, nChans = 10, blocksize = 2):
         wait = delta - (time() - sendtime)
         if wait > 0:
             sleep(wait)
-        
+signalproxy()

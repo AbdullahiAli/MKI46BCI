@@ -176,7 +176,7 @@ def fouriertransform(data, fSample, dim=0):
     >>> data = bufhelp.gatherdata("start",10,"stop")
     >>> data = preproc.fouriertransform(data, bufhelp.fSample)
     '''
-        
+   
     if not isinstance(dim, int):
         raise Exception("dim is not a int.")   
         
@@ -188,25 +188,27 @@ def fouriertransform(data, fSample, dim=0):
         
         for k in range(0,len(data)):
             data = dataclone[k]
+         
             ft = numpy.abs(numpy.fft.fft(data, axis=dim))**2
             freqs = numpy.fft.fftfreq(data.shape[0], 1.0/fSample)
             idx = [i for i in numpy.argsort(freqs) if freqs[i] >= 0]
-    
             index = list(data.shape)
             index[dim] = len(idx)
             ps = numpy.zeros(index)
             
             
             s = list(data.shape)
+            
             del s[dim]
             s = s[0]
+            
             for i in range(0,s):
                 ind = [i,i]
                 ind[dim] = list(range(0,len(idx)))
                 sel = [i,i]
                 sel[dim] = idx
                 ps[ind] = ft[sel]
-                
+          
             dataclone[k] = ps
             
         return dataclone
@@ -310,7 +312,7 @@ def spectralfilter(data, band, fSample, dim=0):
     >>> data = preproc.spectralfilteronly(data, (8, 10, 12, 14), bufhelp.fSample)
     '''
     data = fouriertransform(data, fSample, dim)
-    
+ 
     return spectralfilteronly(data,band,fSample,dim)
     
         
@@ -357,7 +359,7 @@ def spectralfilteronly(data, band, fSample, dim=0):
     >>> data = preproc.fouriertransform(data)
     >>> data = preproc.spectralfilteronly(data, (8, 10, 12, 14), bufhelp.fSample)
     '''
-    
+   
     if isinstance(band, (tuple,list)):
         if not (len(band)==2 or len(band)==4):
             raise Exception("band is wrong length tuple/list")
@@ -383,9 +385,12 @@ def spectralfilteronly(data, band, fSample, dim=0):
             del s[dim]
             for j in range(0,s[0]):
                 index = [j,j]
+       
                 for i in range(0,X.shape[dim]):
                     index[dim] = i
-                    X[index] = X[index] * _bandfunc(freqs[i], band)           
+                    
+                    X[index[0], index[1]] = X[index[0], index[1]] * _bandfunc(freqs[i], band)   
+                    
     elif isinstance(data,numpy.ndarray):
         freqs = spectrum(data,fSample, dim)
         s = list(data.shape)

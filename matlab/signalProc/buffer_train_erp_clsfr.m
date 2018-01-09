@@ -82,13 +82,15 @@ end
 if ( isempty(chNames) ) 
   warning('No channel names set');
   chNames={}; for di=1:size(X,1); chNames{di}=sprintf('%d',di); end;
+  disp(chNames)
 end
 
 % get position info and identify the eeg channels
 di = addPosInfo(chNames,opts.capFile,opts.overridechnms); % get 3d-coords
 iseeg=false(size(X,1),1); iseeg([di.extra.iseeg])=true;
 if ( any(iseeg) ) 
-  ch_pos=cat(2,di.extra.pos3d); ch_names=di.vals; % extract pos and channels names    
+  ch_pos=cat(2,di.extra.pos3d); ch_names=di.vals; % extract pos and channels names
+
 else % fall back on showing all data
   warning('Capfile didnt match any data channels -- no EEG?');
   ch_pos=[]; ch_names=di.vals; iseeg(:)=true;

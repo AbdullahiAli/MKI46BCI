@@ -3,7 +3,7 @@ dataRootDir = '.'; % main directory the data is saved relative to in sub-dirs
 % load info on the set of datasets to process
 datasets_offline();
 
-trlen_ms=750;
+trlen_ms=700;
 label ='offline'; % generic label for this slice/analysis type. Make it something informative
 makePlots=0; % flag if we should make summary ERP/AUC plots whilst slicing
 
@@ -28,7 +28,7 @@ for si=1:numel(datasets);
      % do the actual slicing now
      fprintf('Trying : %s\n',sessdir);
      try;
-        [data,devents,hdr,allevents]=sliceraw(sessdir,'startSet',{'stimulus.target'},'trlen_ms',trlen_ms,'offset_ms',[0 0]);
+        [data,devents,hdr,allevents]=sliceraw(sessdir,'startSet',{},'trlen_ms',trlen_ms,'offset_ms',[0 0]);
         % save the sliced data
         fprintf('Saving to: %s',savefn);
         save(savefn,'data','devents','hdr','allevents');

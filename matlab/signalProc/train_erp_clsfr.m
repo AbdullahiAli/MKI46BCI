@@ -202,6 +202,7 @@ end
 %4) spectrally filter to the range of interest
 filt=[]; 
 fs=opts.fs;
+trlen_samp = (size(X,2) / fs) * 1000;
 outsz=[size(X,2) size(X,2)];
 if(~isempty(opts.downsample)) outsz(2)=min(outsz(2),round(trlen_samp*opts.downsample/fs)); fs=opts.downsample; end;
 if ( ~isempty(opts.freqband) && size(X,2)>10 && ~isempty(fs) ) 
