@@ -82,7 +82,9 @@ while (ishandle(contFig))
     disp(sigProcCmd);
     sendEvent(sigProcCmd,'start'); 
       if ( ~isempty(strfind(phaseToRun,'train')) ) % tell the sig-proc to go if real run
-		 sendEvent('startPhase.cmd','training')
+		 % sendEvent('startPhase.cmd','training') % This was changed to run
+		 % our own classifier training.
+         TrainingSignals;
 	  end
     for i=1:20; % N.B. use a loop as safer and matlab still responds on windows...
        [devents]=buffer_newevents(buffhost,buffport,[],sigProcCmd,'end',1000); % wait until finished
@@ -118,7 +120,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       preConfigured=true;      
-      imCalibrateStimulus;
+      %imCalibrateStimulus; % Changed to our file
       preConfigured=false;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
@@ -228,6 +230,7 @@ while (ishandle(contFig))
     sendEvent(phaseToRun,'start');
     try
       sendEvent('startPhase.cmd','contfeedback');
+      FeedbackSignals;
       brainfly;
     catch
        le=lasterror;fprintf('ERROR Caught:\n %s\n%s\n',le.identifier,le.message);
