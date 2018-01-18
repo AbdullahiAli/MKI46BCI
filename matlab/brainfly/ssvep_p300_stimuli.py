@@ -13,7 +13,7 @@ import FieldTrip
 hostname='localhost'
 port=1972
 
-width, height = 1500, 1000
+width, height = 1820, 1080
 FPS = 60
 
 class ScreenState():
@@ -57,7 +57,7 @@ class Rectangle(pygame.Rect):
         
     def draw(self, surface, width=0):
         if self.ssvep:
-            self.color = (255, 0,0) # set middle argument to zero for only SSVEP-B
+            self.color = (255, 255,0) # set middle argument to zero for only SSVEP-B
             
         elif self.fill:
             self.color = (255,0,0)
@@ -129,8 +129,8 @@ def main():
     screen = pygame.display.set_mode((width, height))
 
     pygame.display.set_caption('SSVEP - P300 Stimulus')
-    right_rect = Rectangle(1300,400,200,400)
-    left_rect = Rectangle(0,400,200,400)
+    right_rect = Rectangle(1620,450,200,200)
+    left_rect = Rectangle(0,450,200,200)
     run = False
     left_rect.set_flicker_speed(20)
     right_rect.set_flicker_speed(20)
@@ -163,9 +163,10 @@ def main():
                     right_rect.set_ssvep(False)
                     
             # if last event was more than 2 sec ago     
-            if last_event > 2000:
+            if last_event > 1000:
                 pos = shape_iterator.next()
-                process_event(left_rect, right_rect, pos, target)
+                #process_event(left_rect, right_rect, pos, target)
+                test_event(left_rect, right_rect, pos)
                 last_event = 0
             
             flicker_controller(left_rect, right_rect)
@@ -178,22 +179,22 @@ def main():
             last_event+= time_passed
             total_time += time_passed
             pause_time += time_passed
-            
-            if total_time > 240000:
-                sendEvent("stimulus.training",  "end")
-                pygame.quit()
-                sys.exit()
-   
-            if pause_time > 60000:
-                if target == 'left':
-                    target = 'right'
-                else:
-                    target = 'left'
-                run = False
-                right_rect.reset()
-                left_rect.reset()
-                last_event = 0
-                pause_time = 0
+#            
+#            if total_time > 240000:
+#                sendEvent("stimulus.training",  "end")
+#                pygame.quit()
+#                sys.exit()
+#   
+#            if pause_time > 60000:
+#                if target == 'left':
+#                    target = 'right'
+#                else:
+#                    target = 'left'
+#                run = False
+#                right_rect.reset()
+#                left_rect.reset()
+#                last_event = 0
+#                pause_time = 0
         
 def process_event(left_rect, right_rect, pos, target):
     """
@@ -202,18 +203,32 @@ def process_event(left_rect, right_rect, pos, target):
     if pos == 0:
         if target == 'left':
             sendEvent("stimulus.hybrid", "target")
+            sendEvent("stimulus.shape", "left")
         else:
             sendEvent("stimulus.hybrid", "non-target")
+            
         left_rect.set_ssvep(True)
         right_rect.set_ssvep(False)
     else:
         if target == 'right':
             sendEvent("stimulus.hybrid", "target")
+            sendEvent("stimulus.shape", "right")
         else:
             sendEvent("stimulus.hybrid", "non-target")
         right_rect.set_ssvep(True)
         left_rect.set_ssvep(False)
-
+        
+def test_event(left_rect, right_rect, pos):
+    if pos == 0:
+        sendEvent("stimulus.hybrid", "left")
+        left_rect.set_ssvep(True)
+        right_rect.set_ssvep(False)
+       
+    else:
+        sendEvent("stimulus.hybrid", "right")
+        right_rect.set_ssvep(True)
+        left_rect.set_ssvep(False)
+        
 def flicker_controller(left_rect, right_rect):
     """
     Needs doc

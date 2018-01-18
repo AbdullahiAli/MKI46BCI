@@ -1,4 +1,5 @@
 function [cannonAction,cannonTrotFrac]=prediction2action(prob,margin,warpp)
+  disp(['prob', ' ', num2str(prob)]);
   if( nargin<2 || isempty(margin) ) margin=.1; end;
   if( nargin<3 || isempty(warpp) ) warpp=false; end;
   cannonAction=''; cannonTrotFrac=[];
@@ -6,6 +7,7 @@ function [cannonAction,cannonTrotFrac]=prediction2action(prob,margin,warpp)
   % assume class order: [right left fire] (if fire is present)
   if( warpp ) % warp = prod=position
     cannonAction=prob(1);
+    disp(prob)
     if( numel(prob)<=2 )   cannonAction = prob(1);
     elseif(numel(prob)>2)  cannonAction = prob(1)./sum(prob(1:2));
     end;

@@ -119,21 +119,24 @@ while ( toc(t0)<gameDuration && ishandle(hFig))
          % -- get the current user/BCI input
   if ( useBuffer )
     [dv,prob,buffstate,filtstate]=processNewPredictionEvents(buffhost,buffport,buffstate,predType,gameFrameDuration*1000/2,predFiltFn,filtstate,verb-1);
+    prob = round(prob);
     if( ~isempty(dv) ) fprintf('%d) Pred: dv=[%s]\n',nframe,sprintf('%g,',dv)); end;
     
     if( ~isempty(dv) ) % only if events to process...
       [cannonAction,cannonTrotFrac]=prediction2action(prob,predictionMargin,warpCursor);
     end
   end
-  
+      
       %----------------------------------------------------------------------
       % Operate the cannon:
   if( ~isempty(cannonAction) ) % updat the cannon
     if(ischar(cannonAction) )
       fprintf('%d) move %s %g\n',nframe,cannonAction,cannonTrotFrac);
     else
-      fprintf('%d) warp %g\n',nframe,cannonAction);
+      %fprintf('%d) warp %g\n',nframe,cannonAction);
     end
+    
+    disp(cannonTrotFrac);
     hCannon.move(cannonAction,cannonTrotFrac);      
   end
 

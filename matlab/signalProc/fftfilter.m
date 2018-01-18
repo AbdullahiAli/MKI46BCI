@@ -51,7 +51,7 @@ if ( numel(g) < len(1) ) % 0-pad & replicate to pos+neg freq
 end
 
 g = shiftdim(g,-(dim-1)); % make g the right size
-
+disp(len(2));
 if ( len(2)>size(f,dim) ) % upsample
    warning('UpSampling not implemented yet!');
    len(2)=size(f,dim);
