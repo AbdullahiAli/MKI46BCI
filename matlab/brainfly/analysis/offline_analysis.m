@@ -30,14 +30,14 @@ hdr.labels = {'left', 'right'};
 % Constants
 capFile='Capfile_hybrid.txt';
 overridechnm=1; % capFile channel names override those from the header!
-dname = 'data_bram';
+dname = '../appie_hybrid_0801';
 cname  ='clsfr';
 load(dname);
 hdr.nEvents = length(devents);
 hdr.nevents= length(devents);
 
 % train classifier
-clsfr=buffer_train_erp_clsfr(data,devents,hdr,'spatialfilter','ssep','freqband',[1 10 17 23 37 43],'badchrm',0,'capFile',capFile,'overridechnms',overridechnm);
+clsfr=buffer_train_erp_clsfr(data,devents,hdr,'spatialfilter','ssep','freqband',[1 6 10 14],'badchrm',0,'capFile',capFile,'overridechnms',overridechnm);
 
 fprintf('Saving classifier to : %s\n',cname);
 save(cname,'-struct','clsfr');

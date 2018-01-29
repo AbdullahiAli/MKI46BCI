@@ -179,7 +179,7 @@ def main():
             last_event+= time_passed
             total_time += time_passed
             pause_time += time_passed
-#            
+            
 #            if total_time > 240000:
 #                sendEvent("stimulus.training",  "end")
 #                pygame.quit()
@@ -195,7 +195,7 @@ def main():
 #                left_rect.reset()
 #                last_event = 0
 #                pause_time = 0
-        
+#        
 def process_event(left_rect, right_rect, pos, target):
     """
     needs doc

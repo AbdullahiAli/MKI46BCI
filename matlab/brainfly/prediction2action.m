@@ -1,5 +1,5 @@
 function [cannonAction,cannonTrotFrac]=prediction2action(prob,margin,warpp)
-  disp(['prob', ' ', num2str(prob)]);
+ 
   if( nargin<2 || isempty(margin) ) margin=.1; end;
   if( nargin<3 || isempty(warpp) ) warpp=false; end;
   cannonAction=''; cannonTrotFrac=[];
