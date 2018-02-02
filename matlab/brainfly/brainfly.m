@@ -217,25 +217,9 @@ while ( toc(t0)<gameDuration && ishandle(hFig))
 	% TODO: only send event when state *really* changes?
 	newstimState=true;
 
-                 %fprintf('%d) %g %d=>[%s]\n',nframe,frameTime,stimi,...
-                 % sprintf('%d=%d ',[stim2obj(stim2obj>0) ss(stim2obj>0)]'));
-
-                            % flash cannon, N.B. cannon is always stim-seq #1
+                 
     set(hCannon.hGraphic,'facecolor',stimColors(ss(1)+1,:));
-                                % flash the background
-    %set(hbackground,'facecolor',stimColors(ss(2)+1,:));
-    %%                             % flash the aliens
-    %% alien2stim=zeros(numel(hAliens));
-    %% for i=1:numel(hAliens);
-    %%   auid=hAliens(i).uid;
-    %%   mi  =find(stim2obj==auid);
-    %%   if( isempty(mi) ) mi=find(stim2obj==0,1); end % pick an empty stim
-    %%                                % update the tracking info
-    %%   nstim2obj(mi,1) =auid; % new list of used stimulus, ensure col-vector
-    %%   alien2stim(i) =mi;
-    %%                             % apply the stimulus
-    %%   set(hAliens(i).hGraphic,'facecolor',stimColors(ss(mi)+1,:));
-    %% end
+ 
   end
     
 

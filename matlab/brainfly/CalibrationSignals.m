@@ -19,7 +19,7 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
 end;
 
 prompt = 'specify name of data to be saved\n';
-dname = input(prompt, 's');
+dname = strcat('analysis/data/',input(prompt, 's'));
 trlen_ms= 700;
 
 

@@ -22,7 +22,7 @@ end;
 capFile='Capfile_hybrid.txt';
 
 prompt = 'specify name of data to be loaded\n';
-dname = input(prompt, 's');
+dname = strcat('analysis/data/',input(prompt, 's'));
 cname  ='clsfr';
 overridechnm=1; % capFile channel names override those from the header!
 
