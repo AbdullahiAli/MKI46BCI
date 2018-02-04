@@ -90,7 +90,7 @@ function [clsfr,res,X,Y]=train_erp_clsfr(X,Y,varargin)
 				  'ch_pos',[],'ch_names',[],'verb',0,'capFile','1010','overridechnms',0,...
 				  'visualize',1,'badCh',[],'nFold',10,'class_names',[],'zeroLab',1);
 [opts,varargin]=parseOpts(opts,varargin);
-
+disp(Y)
 di=[]; ch_pos=opts.ch_pos; ch_names=opts.ch_names;
 if ( iscell(ch_pos) && ischar(ch_pos{1}) ) ch_names=ch_pos; ch_pos=[]; end;
 % convert names to positions

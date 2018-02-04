@@ -233,7 +233,7 @@ def fouriertransform(data, fSample, dim=0):
             ps[ind] = ft[sel]
     else:
         raise Exception("data should be a numpy array or list of numpy arrays.")
-        
+        print(len(ps))
         return ps   
         
 def spectrum(data, fSample, dim=0):

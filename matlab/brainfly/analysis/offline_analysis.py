@@ -1,10 +1,14 @@
 import sys,os, glob
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../../dataAcq/buffer/python"))
-sys.path.append("../signalProc")
+bufferpath = "../../../dataAcq/buffer/python"
+sigProcPath = "../signalProc"
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcPath))
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
+import FieldTrip
+
 import preproc
 
 import numpy as np
-import FieldTrip
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from scipy.signal import resample
@@ -69,13 +73,15 @@ def preprocess(data, events, matlab=False, spectral=True):
     '''
     if matlab: 
         data, events = reformat(data, events)
+    data = preproc.detrend(data, dim=0)
+
     data, badch = preproc.badchannelremoval(data)
-    data, events, badtrials = preproc.badtrailremoval(data, events)
-    data = preproc.spatialfilter(data)
-    data = preproc.detrend(data, dim=0, type="constant")
+    data = preproc.spatialfilter(data, type='whiten')
     if spectral:
         data = preproc.spectralfilter(data, (1,40), fSample)
-    
+   
+    data, events, badtrials = preproc.badtrailremoval(data, events)
+
     return data, events
 
 def analysis(data, events, side, analysis_type):
@@ -85,18 +91,16 @@ def analysis(data, events, side, analysis_type):
     ----------
     data : a list of datapoints (numpy arrays)
     events : a list of fieldtrip events or a numpy array
-    side: Event of interest, can either be 'left' or 'right'
+    side: Event of interest, can either be 'target'/'non-target'/left'/'right'
     analysis_type: 
     
     Examples
     --------
     >>> data, events = ftc.getData(0,100)
     >>> data, events = preprocess(data, events)
-    >>> Oz, Pz = analysis(data, events, 'left', 'ersp')
+    >>> Oz, Pz = analysis(data, events, 'target', 'ersp')
     
     '''
-    if analysis_type is 'ersp':
-        data = preproc.fouriertransform(data,fSample)
 
     dims = data[0].shape[0]
 
@@ -112,6 +116,8 @@ def analysis(data, events, side, analysis_type):
                 Pz = np.add(Pz,a2)
                 count+= 1
             elif analysis_type is 'erp':
+                a1 = butter_lowpass_filter(a1, 10, fSample)
+                a2 = butter_lowpass_filter(a2, 10, fSample)
                 Oz = np.add(Oz, a1)
                 Pz = np.add(Pz, a2)
                 count += 1
@@ -138,16 +144,22 @@ def spectral_analysis(data, events):
     data, events = preprocess(data, events, matlab=True)
     Oz1, Pz1 = analysis(data, events,'target','ersp')
     Oz2, Pz2 = analysis(data, events, 'non-target', 'ersp')
-    plt.figure(1, figsize=(8,6))
-    plt.title("Spectogram of " + condition + " Condition")
+    
+    plt.figure(1, figsize=(10,8))
+
+    
+    plt.suptitle("Spectogram of " + condition + " Condition")
     plt.subplot(1,2,1)
     plt.title('target')
+    plt.xlabel('time (sec)')
+    plt.ylabel('frequency (Hz)')
     plt.specgram(Oz1, NFFT=256, Fs=fSample)
 
 
- 
     plt.subplot(1,2,2)
     plt.title('non-target')
+    plt.xlabel('time (sec)')
+    plt.ylabel('frequency (Hz)')
     plt.specgram(Oz2, NFFT=256, Fs=fSample)
     plt.show()
 
@@ -158,12 +170,13 @@ def erp_analysis(data, events):
     
     Parameters
     ----------
-    label : class of interest ('left' or 'right')
+    data : class of interest ('left' or 'right')
     subject: which subject file to load
     
     Examples
     --------
-    >>> erp_analysis('left', 'right','subject00')
+    >>> data, events = ftc.getData(0,100)
+    >>> erp_analysis(data, events)
     '''
     """
     
@@ -171,13 +184,40 @@ def erp_analysis(data, events):
     Oz1, Pz1 = analysis(data, events,'target', 'erp')
     Oz2, Pz2 = analysis(data, events, 'non-target', 'erp')
     Pz1, Pz2 = resample(Pz1, 700), resample(Pz2, 700)
+
     plt.figure(1, figsize=(10,5))
     Pz1, = plt.plot(Pz1, label='target')
     Pz2, = plt.plot(Pz2, label='non-target')
     plt.legend(handles=[Pz1, Pz2])
 
+from scipy.signal import butter, lfilter, freqz
+
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
+
 def concat_data(condition):
-    os.chdir("../brainfly/analysis/data")
+    """
+    pools data of each subject for a specific condition
+    
+    Parameters
+    ----------
+    condition: condition for which you want to pool the data
+    
+    Examples
+    --------
+    >>> data, events = concat_data('hybrid')
+    >>> erp_analysis(data, events)
+    '''
+    """
+    os.chdir("data/")
     file_names = [name for name in glob.glob('*'+str(condition)+ '*')]
     data = loadmat(file_names.pop(0))
     data, events = data['data'], data['devents']
@@ -187,9 +227,9 @@ def concat_data(condition):
         data, events = np.concatenate((data, new_data), axis=0), \
         np.concatenate((events, new_events), axis=0)
     return data, events
-print("type in the condition for which you want a spectral analysis")
+print("type in the condition for which you want a spectral and erp analysis")
 condition = input()
 data, events = concat_data(condition)
 spectral_analysis(data, events)
 
-erp_analysis(data, events)
+#erp_analysis(data, events)

@@ -72,7 +72,7 @@ class Rectangle(pygame.Rect):
         
     def draw(self, surface, width=0):
         if self.event:
-            self.color = (255, 255,0) # set middle argument to zero for only SSVEP-B
+            self.color = (255, 0,0) 
             
         elif self.fill:
             self.color = (255,0,0)
@@ -140,7 +140,7 @@ def main():
     target = 'left'
     screen = pygame.display.set_mode((width, height))
 
-    pygame.display.set_caption('SSVEP-B/Hybrid Calibration Stimulus')
+    pygame.display.set_caption('SSVEP-B Calibration Stimulus')
     right_rect = Rectangle(1620,450,200,200)
     left_rect = Rectangle(0,450,200,200)
     run = False

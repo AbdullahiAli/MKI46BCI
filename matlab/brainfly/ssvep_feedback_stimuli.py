@@ -135,8 +135,8 @@ def main():
     right_rect = Rectangle(1620,450,200,200)
     left_rect = Rectangle(0,450,200,200)
     run = False
-    left_rect.set_flicker_speed(14)
-    right_rect.set_flicker_speed(10)
+    left_rect.set_flicker_speed(30)
+    right_rect.set_flicker_speed(20)
     sendEvent("stimulus.training", "start")
     while True: # display update loop
         for event in pygame.event.get():

@@ -1,21 +1,34 @@
 Hybrid
-Bram:   66.2 (117 trials) mean: 66.2 (117 trials)
+Bram:   70.7 (117 trials) mean: 70.7 (117 trials)
 
-Appie:  76.1 (117 trials)  83.3 (236 trials) 77.4 (236 trials) mean: 79.5 (589 trials)
+Appie: 82.1  (117 trials)  85.7 (236 trials) 75.2 (236 trials) mean: 80.78 (589 trials)
 
-Jake: 74.4 (117 trials) 63.9 (236 trials) mean: 67.4 (353 trials)
+Jake: 77.3 (117 trials) 65.9 (236 trials) mean: 69.68 (353 trials)
 
 SSVEP-B
-Bram: 57.7 (117 trials) mean: 57.7 (117 trials)
+Bram: 59.3 (117 trials) mean: 59.3 (117 trials)
 
-Appie: 79.1 (117 trials) mean: 79.1 (117 trials)
+Appie: 80.5 (117 trials) mean: 80.5 (117 trials)
 
-Jake: 67.7 (104 trials) mean: 67.7 (104 trials)
+Jake: 66.0 (104 trials) mean: 66.0 (104 trials)
 
 SSVEP:
-Bram: 59.3 (225 trials) mean: 59.3 (225 trials) 
+Bram: 60.7 (225 trials) mean: 60.7 (225 trials) 
 
 Appie: 46.8 (225 trials) mean: 46.8 (225 trials)
 
-Jake: 50.3 (225 trials) mean: 50.2 (225 trials)
+Jake: 50.3 (225 trials) mean: 50.3 (225 trials)
 
+Hybrid mean: 75.97 upper_bound: 78.39, lower_bound: 73.25 
+SSVEP-B mean: 68.7 upper_bound: 73.35, lower_bound: 63.49
+SSVEP mean: 52.6 upper_bound: 56.33, lower_bound: 48.82
+
+KruskalResult(statistic=5.0666666666666629, pvalue=0.079393932277078361)
+
+Hybrid
+50.1, 50.2 , 45.9
+SSVEP-B
+50.9, 50.5, 59.8
+
+SSVEP:
+51.6, 50.3, 55.3
