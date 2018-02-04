@@ -116,8 +116,6 @@ def analysis(data, events, side, analysis_type):
                 Pz = np.add(Pz,a2)
                 count+= 1
             elif analysis_type is 'erp':
-                a1 = butter_lowpass_filter(a1, 10, fSample)
-                a2 = butter_lowpass_filter(a2, 10, fSample)
                 Oz = np.add(Oz, a1)
                 Pz = np.add(Pz, a2)
                 count += 1
@@ -190,18 +188,6 @@ def erp_analysis(data, events):
     Pz2, = plt.plot(Pz2, label='non-target')
     plt.legend(handles=[Pz1, Pz2])
 
-from scipy.signal import butter, lfilter, freqz
-
-def butter_lowpass(cutoff, fs, order=5):
-    nyq = 0.5 * fs
-    normal_cutoff = cutoff / nyq
-    b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    return b, a
-
-def butter_lowpass_filter(data, cutoff, fs, order=5):
-    b, a = butter_lowpass(cutoff, fs, order=order)
-    y = lfilter(b, a, data)
-    return y
 
 def concat_data(condition):
     """
@@ -227,9 +213,11 @@ def concat_data(condition):
         data, events = np.concatenate((data, new_data), axis=0), \
         np.concatenate((events, new_events), axis=0)
     return data, events
-print("type in the condition for which you want a spectral and erp analysis")
+
+
+print("type in the condition for which you want a spectral and erp analysis (hybrid, ssvepb, ssvep)")
 condition = input()
 data, events = concat_data(condition)
 spectral_analysis(data, events)
 
-#erp_analysis(data, events)
+erp_analysis(data, events)
